@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>本地接口测试工具</title>
+<meta name="author" content="https://github.com/niushuai1991" />
+<meta name="date" content="2017年3月15日" />
+<script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+function commit(){
+	$("#result").html("");
+	$.ajax({
+		url: $('#url').val(),
+		type: $('#commit_type').val(),
+		success: function(response){
+			if(console && console.log)console.log(response);
+			$("#result").html(JSON.stringify(response));
+		},
+		error: function(){
+			$("#result").html("error");
+		}
+	});
+}
+</script>
+</head>
+<body>
+	<input id="url" type="text" style="width:500px" />
+	<select id="commit_type" >
+		<option value="get">GET</option>
+		<option value="post">POST</option>
+	</select>
+	<input type="button" onclick="commit()" value="测试" />
+	<textarea id="result" style="width:500px;height=600"></textarea>
+	
+</body>
+</html>
