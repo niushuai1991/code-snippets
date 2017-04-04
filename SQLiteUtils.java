@@ -26,14 +26,15 @@ import java.sql.Statement;
   * @author niushuai
   * @since 0.0.1
   */
-public class SQLiteUtils {
+public class SQLiteUtils implements AutoCloseable {
     
     private static final String DRIVER_NAME = "org.sqlite.JDBC";
-    private final String url;
+    private static Connection conn = null;
     
-    public SQLiteUtils(String url) throws ClassNotFoundException{
+    public SQLiteUtils(String url, boolean autoCommit) throws ClassNotFoundException, SQLException{
         Class.forName(DRIVER_NAME);
-        this.url = url;
+        conn = DriverManager.getConnection(url);
+        conn.setAutoCommit(autoCommit);
     }
     
     /**
@@ -49,35 +50,14 @@ public class SQLiteUtils {
       * @throws SQLException int
      */
     public int executeUpdate(String sql) throws SQLException{
-        Connection conn = DriverManager.getConnection(url);
-        conn.setAutoCommit(true);
         try(Statement stmt = conn.createStatement()) {
             return stmt.executeUpdate(sql);
         }
     }
     
     public ResultSet executeQuery(String sql) throws SQLException {
-        Connection conn = DriverManager.getConnection(url);
-        conn.setAutoCommit(true);
-        try(Statement stmt = conn.createStatement()) {
-            return stmt.executeQuery(sql);
-        }
-    }
-    
-    /**
-      * <p>
-      * 获取statement (自动提交)
-      * </p>
-      *
-      * @action
-      *    niushuai 2017年3月31日 下午7:23:00 描述
-      *
-      * @param sql
-      * @return
-      * @throws SQLException PreparedStatement
-     */
-    public PreparedStatement getPreparedStatement(String sql) throws SQLException{
-        return getPreparedStatement(sql,true);
+        Statement stmt = conn.createStatement();
+        return stmt.executeQuery(sql);
     }
     
     /**
@@ -93,9 +73,17 @@ public class SQLiteUtils {
       * @return
       * @throws SQLException PreparedStatement
      */
-    public PreparedStatement getPreparedStatement(String sql,boolean autoCommit) throws SQLException{
-        Connection conn = DriverManager.getConnection(url);
-        conn.setAutoCommit(autoCommit);
+    public PreparedStatement getPreparedStatement(String sql) throws SQLException{
         return conn.prepareStatement(sql);
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.AutoCloseable#close()
+     */
+    @Override
+    public void close() throws SQLException {
+        if(conn != null && !conn.isClosed()) {
+            conn.close();
+        }
     }
 }
